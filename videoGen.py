@@ -7,9 +7,9 @@ class VideoGenerator:
     def __init__(self, env):
         self.env = env
 
-    def generateVideo(self, backgroundVideoFileName, ttsAudioPath, outputVideoPath, directory, subtitlesPath):
+    def generateVideo(self, ttsAudioPath, outputVideoPath, directory, subtitlesPath, params):
         backgroundVideoPath = self.getBackgroundVideoPath(
-            backgroundVideoFileName, directory)
+            params['BG_VIDEO_FILENAME'], directory)
 
         if not os.path.isfile(backgroundVideoPath):
             print(f"Video file not found: {backgroundVideoPath}")
@@ -24,7 +24,8 @@ class VideoGenerator:
         videoStream = self.getVideoStream(videoProbe)
         videoDuration = float(videoStream['duration'])
 
-        startTime = self.getStartTime(audioDuration, videoDuration)
+        startTime = self.getStartTime(
+            audioDuration, videoDuration, params['RANDOM_START_TIME'])
 
         # Calculate new dimensions only when necessary
         newWidth, newHeight = None, None
@@ -43,7 +44,7 @@ class VideoGenerator:
         if backgroundVideoFileName.upper() == 'RANDOM':
             return self.getRandomMP4(directory)
         else:
-            return os.path.join(directory, self.env['BG_VIDEO_FILENAME'])
+            return os.path.join(directory, backgroundVideoFileName)
 
     def getAudioDuration(self, ttsAudioPath):
         probe = ffmpeg.probe(ttsAudioPath)
@@ -52,8 +53,7 @@ class VideoGenerator:
     def getVideoStream(self, videoProbe):
         return next((stream for stream in videoProbe['streams'] if stream['codec_type'] == 'video'), None)
 
-    def getStartTime(self, audioDuration, videoDuration):
-        randomizeStart = self.env['RANDOM_START_TIME'].upper() == 'TRUE'
+    def getStartTime(self, audioDuration, videoDuration, randomizeStart):
         if videoDuration > audioDuration and randomizeStart:
             return random.uniform(0, videoDuration - audioDuration)
         else:

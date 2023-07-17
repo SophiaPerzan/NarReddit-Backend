@@ -4,9 +4,8 @@ from datetime import timedelta
 
 
 class ForcedAligner:
-    def __init__(self, gentleUrl, env):
+    def __init__(self, gentleUrl):
         self.gentleUrl = gentleUrl
-        self.env = env
         self.subtitleCharGroupSize = 1
 
     def align(self, audioPath, transcription, srtOutputPath):
