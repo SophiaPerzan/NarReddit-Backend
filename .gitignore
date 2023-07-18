@@ -162,3 +162,4 @@ background-videos/*.mp4
 output/*.mp4
 tts-audio-files/*.mp3
 tts-audio-files/*.srt
+*.zip

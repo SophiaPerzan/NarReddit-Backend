@@ -6,9 +6,10 @@ import os
 app = Flask(__name__)
 
 
-@app.route('/run', methods=['POST'])
-def run():
+@app.route('/script', methods=['POST'])
+def script():
     params = request.get_json()
+    print("received request")
 
     narreddit = NarReddit()
     video_files = narreddit.createVideo(params)
@@ -18,5 +19,9 @@ def run():
         # add files to the zip file
         for video in video_files:
             zipf.write(video, arcname=os.path.basename(video))
-
+    print("created zip file")
     return send_file('videos.zip', mimetype='application/zip', as_attachment=True)
+
+
+if __name__ == '__main__':
+    app.run()
