@@ -11,31 +11,34 @@ from gpt import GPT
 class NarReddit:
     def __init__(self):
         load_dotenv()
-        self.env = env
+        self.scraper = Scraper(env)
+        self.tts = TTS(env)
+        self.forcedAligner = ForcedAligner(env['GENTLE_URL'])
+        self.videoGen = VideoGenerator(env)
+        self.gpt = GPT(env)
 
     def scrapePost(self, params):
-        scraper = Scraper(self.env)
-        postTitle, postContent = scraper.getHotPosts(params)
+        postTitle, postContent = self.scraper.getHotPosts(params)
         print(f"Scraped post: {postContent}")
         return postTitle, postContent
 
+    def editPostForTTS(self, postContent):
+        pass
+
     def generateAudio(self, editedPost, gender, language):
-        tts = TTS(self.env)
-        audioFile = tts.createAudio(editedPost, gender, language)
+        audioFile = self.tts.createAudio(editedPost, gender, language)
         print(f"Created audio file: {audioFile}")
         return audioFile
 
     def createSubtitles(self, editedPost, audioFile):
         subtitlesPath = 'tts-audio-files/subtitles.srt'
-        forcedAligner = ForcedAligner(self.env['GENTLE_URL'])
-        subtitleText = gpt.getSubtitles(editedPost)
-        forcedAligner.align(audioFile, subtitleText, subtitlesPath)
+        subtitleText = self.gpt.getSubtitles(editedPost)
+        self.forcedAligner.align(audioFile, subtitleText, subtitlesPath)
         return subtitlesPath
 
     def generateVideo(self, audioFile, subtitlesPath, params, language):
-        videoGen = VideoGenerator(self.env)
         outputPath = os.path.join('output', f"{language}.mp4")
-        videoFile = videoGen.generateVideo(
+        videoFile = self.videoGen.generateVideo(
             audioFile, outputPath, 'background-videos', subtitlesPath, params)
 
         if videoFile:
@@ -47,11 +50,11 @@ class NarReddit:
     def createVideo(self, params):
         postTitle, postContent = self.scrapePost(params)
         languages = params['LANGUAGES'].lower().split(',')
-        gpt = GPT(self.env)
-        gender = gpt.getGender(postContent)
+        gender = self.gpt.getGender(postContent)
+        videos = []
 
         for language in languages:
-            editedPost = gpt.expandAcronymsAndAbbreviations(
+            editedPost = self.gpt.expandAcronymsAndAbbreviations(
                 postContent, language)
             audioFile = self.generateAudio(editedPost, gender, language)
 
@@ -60,4 +63,6 @@ class NarReddit:
             else:
                 subtitlesPath = None
 
-            self.generateVideo(audioFile, subtitlesPath, params, language)
+            videos.append(self.generateVideo(
+                audioFile, subtitlesPath, params, language))
+        return videos
