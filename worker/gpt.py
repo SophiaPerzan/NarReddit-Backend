@@ -19,7 +19,7 @@ class GPT:
         if language != "english":
             instructions = "Translate the following reddit post to " + \
                 language+", then "+sharedInstructions + \
-                " Then expand/convert all characters that are not letters, into the equivalent word/letter representation in the target language."
+                " Then expand/convert all characters that are not letters, into the equivalent word/letter representation in the target language. No numerical characters can remain in the text."
         else:
             instructions = "Given the following reddit post, "+sharedInstructions
         return openai.ChatCompletion.create(model=self.model, messages=[{"role": "system", "content": instructions},

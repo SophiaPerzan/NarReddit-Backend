@@ -1,0 +1,5 @@
+requests==2.31.0
+update-checker==0.18.0
+redis==4.6.0
+rq==1.15.1
+Flask==2.3.2
