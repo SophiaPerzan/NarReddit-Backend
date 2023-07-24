@@ -10,7 +10,7 @@ cache = {}
 id_to_file = {}
 
 
-@app.route('/script', methods=['POST'])
+@app.route('/create', methods=['POST'])
 def script():
     params = request.get_json()
     hashedParams = hash(frozenset(params.items()))
