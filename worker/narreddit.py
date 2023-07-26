@@ -58,7 +58,7 @@ class NarReddit:
                 postContent, language)
             audioFile = self.generateAudio(editedPost, gender, language, hash)
 
-            if params['SUBTITLES'].upper() == 'TRUE' and language == 'english':
+            if params['SUBTITLES'] == True and language == 'english':
                 subtitlesPath = self.createSubtitles(
                     editedPost, audioFile, hash)
             else:
