@@ -86,7 +86,7 @@ class VideoGenerator:
             video = ffmpeg.filter_(video, 'crop', newWidth, newHeight)
 
         # Scale the video to 1080x1920 max resolution
-        video = ffmpeg.filter_(video, 'scale', 'min(1080,iw):-1')
+        video = ffmpeg.filter_(video, 'scale', 'min(1080,iw)', '-1')
 
         # Add subtitles if provided
         if subtitlesPath is not None and os.path.isfile(subtitlesPath):
