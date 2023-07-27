@@ -85,11 +85,14 @@ class VideoGenerator:
         if newWidth is not None and newHeight is not None:
             video = ffmpeg.filter_(video, 'crop', newWidth, newHeight)
 
+        # Scale the video to 1080x1920 max resolution
+        video = ffmpeg.filter_(video, 'scale', 'min(1080,iw):-1')
+
         # Add subtitles if provided
         if subtitlesPath is not None and os.path.isfile(subtitlesPath):
             # Set style for the subtitles
-            style = "FontName=Arial,FontSize=20,PrimaryColour=&H00ffffff,OutlineColour=&H00000000," \
-                    "BackColour=&H80000000,Bold=0,Italic=0,Alignment=10"
+            style = "FontName=Londrina Solid,FontSize=20,PrimaryColour=&H00ffffff,OutlineColour=&H00000000," \
+                    "BackColour=&H80000000,Bold=1,Italic=0,Alignment=10"
             video = ffmpeg.filter_(
                 video, 'subtitles', subtitlesPath, force_style=style)
 
