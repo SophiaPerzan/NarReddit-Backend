@@ -27,7 +27,14 @@ def taskstatus():
     task_id = params['task_id']
     job = q.fetch_job(task_id)
     if job is None:
-        return jsonify({'error': 'No task with this ID'}), 404
+        filename = params['DOC_ID']+'.zip'
+        if filename is None:
+            return jsonify({'error': 'No task with this ID'}), 404
+        filepath = os.path.join('shared', filename)
+        if not os.path.isfile(filepath):
+            return jsonify({'error': 'No task with this ID'}), 404
+        else:
+            return jsonify({'status': 'finished'}), 200
     return jsonify({'status': job.get_status(refresh=True)}), 200
 
 
