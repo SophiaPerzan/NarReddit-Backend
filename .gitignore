@@ -162,3 +162,5 @@ cython_debug/
 /shared/background-videos/*.mp4
 /shared/tts-audio-files/*
 /shared/*.zip
+
+*.env

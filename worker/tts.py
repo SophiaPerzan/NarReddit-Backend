@@ -16,7 +16,7 @@ class TTS:
                 return voice
         return None
 
-    def createAudio(self, text, gender, language, hash):
+    def createAudio(self, text, gender, language, filePrefix):
         voice = self.Paola
         if gender == "M":
             voice = self.Arthur
@@ -24,11 +24,11 @@ class TTS:
             audio = generate(
                 text, voice=voice, model="eleven_monolingual_v1")
             fileName = os.path.join(
-                'shared', 'tts-audio-files', f'english-{hash}.mp3')
+                'shared', 'tts-audio-files', f'english-{filePrefix}.mp3')
         else:
             audio = generate(
                 text, voice=voice, model="eleven_multilingual_v1")
             fileName = os.path.join(
-                'shared', 'tts-audio-files', f'{language}-{hash}.mp3')
+                'shared', 'tts-audio-files', f'{language}-{filePrefix}.mp3')
         save(audio, fileName)
         return fileName

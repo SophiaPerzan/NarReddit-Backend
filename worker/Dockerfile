@@ -12,5 +12,11 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y ffmpeg
 
+# Add the font files to the Docker image
+COPY fonts/ /usr/share/fonts/
+
+# Update the font cache
+RUN fc-cache -f -v
+
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
