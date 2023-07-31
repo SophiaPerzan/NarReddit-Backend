@@ -10,6 +10,12 @@ cache = {}
 id_to_file = {}
 
 
+@app.before_request
+def check_api_key():
+    if "Api-Key" not in request.headers or request.headers.get('Api-Key') != os.environ.get('NARREDDIT_API_KEY'):
+        return jsonify({"error": "Invalid API key"}), 401
+
+
 @app.route('/create', methods=['POST'])
 def script():
     params = request.get_json()
@@ -18,26 +24,29 @@ def script():
     job = q.enqueue('worker.script_async', params, hashedParams)
     cache[hashedParams] = job.get_id()
     id_to_file[job.get_id()] = hashedParams
-    return jsonify({'message': 'Video creation started', 'task_id': job.get_id()}), 202
+    return jsonify({'status': 'started', 'task_id': job.get_id()}), 202
 
 
-@app.route('/status/<task_id>', methods=['GET'])
-def taskstatus(task_id):
+@app.route('/status', methods=['GET'])
+def taskstatus():
+    params = request.get_json()
+    task_id = params['task_id']
     job = q.fetch_job(task_id)
     if job is None:
         return jsonify({'error': 'No task with this ID'}), 404
-    return jsonify({'task_status': job.get_status(refresh=True), 'result': job.result}), 200
+    return jsonify({'status': job.get_status(refresh=True)}), 200
 
 
-@app.route('/download/<task_id>', methods=['GET'])
-def download(task_id):
+@app.route('/download', methods=['GET'])
+def download():
+    params = request.get_json()
     filename = str(id_to_file.get(task_id))+'.zip'
     if filename is None:
         return jsonify({'error': 'No filename associated with this task ID'}), 404
     filepath = os.path.join('shared', filename)
     if not os.path.isfile(filepath):
         return jsonify({'error': 'No filepath associated with this task ID'}), 404
-    return send_file(path_or_file=filepath, as_attachment=True, attachment_filename=filename)
+    return send_file(path_or_file=filepath, as_attachment=True, download_name=filename)
 
 
 if __name__ == '__main__':

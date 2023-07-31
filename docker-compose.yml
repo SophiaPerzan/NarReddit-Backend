@@ -10,6 +10,8 @@ services:
         depends_on:
             - redis
             - gentle
+        env_file:
+            - app.env
     gentle:
         image: lowerquality/gentle
     worker:
