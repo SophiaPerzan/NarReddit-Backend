@@ -21,7 +21,7 @@ def script():
     return jsonify({'status': 'started', 'task_id': job.get_id()}), 202
 
 
-@app.route('/status', methods=['GET'])
+@app.route('/status', methods=['POST'])
 def taskstatus():
     params = request.get_json()
     task_id = params['task_id']
@@ -31,7 +31,7 @@ def taskstatus():
     return jsonify({'status': job.get_status(refresh=True)}), 200
 
 
-@app.route('/download', methods=['GET'])
+@app.route('/download', methods=['POST'])
 def download():
     params = request.get_json()
     filename = params['DOC_ID']+'.zip'
