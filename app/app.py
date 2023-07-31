@@ -37,7 +37,7 @@ def download(task_id):
     filepath = os.path.join('shared', filename)
     if not os.path.isfile(filepath):
         return jsonify({'error': 'No filepath associated with this task ID'}), 404
-    return send_file(path_or_file=filepath, as_attachment=True)
+    return send_file(path_or_file=filepath, as_attachment=True, attachment_filename=filename)
 
 
 if __name__ == '__main__':
