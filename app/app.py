@@ -35,7 +35,8 @@ def taskstatus():
             return jsonify({'error': 'No task with this ID'}), 404
         else:
             return jsonify({'status': 'finished'}), 200
-    return jsonify({'status': job.get_status(refresh=True)}), 200
+    else:
+        return jsonify({'status': job.get_status(refresh=True)}), 200
 
 
 @app.route('/download', methods=['POST'])
