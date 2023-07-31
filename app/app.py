@@ -6,8 +6,6 @@ import os
 app = Flask(__name__)
 redis_conn = Redis(host='redis')
 q = Queue(connection=redis_conn)
-cache = {}
-id_to_file = {}
 
 
 @app.before_request
@@ -19,11 +17,7 @@ def check_api_key():
 @app.route('/create', methods=['POST'])
 def script():
     params = request.get_json()
-    hashedParams = hash(frozenset(params.items()))
-    print("Hashed params: "+str(hashedParams))
-    job = q.enqueue('worker.script_async', params, hashedParams)
-    cache[hashedParams] = job.get_id()
-    id_to_file[job.get_id()] = hashedParams
+    job = q.enqueue('worker.script_async', params)
     return jsonify({'status': 'started', 'task_id': job.get_id()}), 202
 
 
@@ -40,7 +34,7 @@ def taskstatus():
 @app.route('/download', methods=['GET'])
 def download():
     params = request.get_json()
-    filename = str(id_to_file.get(task_id))+'.zip'
+    filename = params['DOC_ID']+'.zip'
     if filename is None:
         return jsonify({'error': 'No filename associated with this task ID'}), 404
     filepath = os.path.join('shared', filename)

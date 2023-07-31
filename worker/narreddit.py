@@ -23,20 +23,21 @@ class NarReddit:
     def editPostForTTS(self, postContent):
         pass
 
-    def generateAudio(self, editedPost, gender, language, hash):
-        audioFile = self.tts.createAudio(editedPost, gender, language, hash)
+    def generateAudio(self, editedPost, gender, language, filePrefix):
+        audioFile = self.tts.createAudio(
+            editedPost, gender, language, filePrefix)
         print(f"Created audio file: {audioFile}")
         return audioFile
 
-    def createSubtitles(self, editedPost, audioFile, hash):
+    def createSubtitles(self, editedPost, audioFile, filePrefix):
         subtitlesPath = os.path.join(
-            'shared', 'tts-audio-files', f'subtitles-{hash}.srt')
+            'shared', 'tts-audio-files', f'subtitles-{filePrefix}.srt')
         subtitleText = self.gpt.getSubtitles(editedPost)
         self.forcedAligner.align(audioFile, subtitleText, subtitlesPath)
         return subtitlesPath
 
-    def generateVideo(self, audioFile, subtitlesPath, params, language, hash):
-        outputPath = os.path.join('shared', f"{language}-{hash}.mp4")
+    def generateVideo(self, audioFile, subtitlesPath, params, language, filePrefix):
+        outputPath = os.path.join('shared', f"{language}-{filePrefix}.mp4")
         bgVideoPath = os.path.join('shared', 'background-videos')
         videoFile = self.videoGen.generateVideo(
             audioFile, outputPath, bgVideoPath, subtitlesPath, params)
@@ -47,7 +48,8 @@ class NarReddit:
             print("Failed to create output video file")
         return videoFile
 
-    def createVideo(self, params, hash):
+    def createVideo(self, params):
+        filePrefix = params['DOC_ID']
         postTitle, postContent = self.scrapePost(params)
         languages = params['LANGUAGES'].lower().split(',')
         gender = self.gpt.getGender(postContent)
@@ -56,16 +58,17 @@ class NarReddit:
         for language in languages:
             editedPost = self.gpt.expandAcronymsAndAbbreviations(
                 postContent, language)
-            audioFile = self.generateAudio(editedPost, gender, language, hash)
+            audioFile = self.generateAudio(
+                editedPost, gender, language, filePrefix)
 
             if params['SUBTITLES'] == True and language == 'english':
                 subtitlesPath = self.createSubtitles(
-                    editedPost, audioFile, hash)
+                    editedPost, audioFile, filePrefix)
             else:
                 subtitlesPath = None
 
             videos.append(self.generateVideo(
-                audioFile, subtitlesPath, params, language, hash))
+                audioFile, subtitlesPath, params, language, filePrefix))
             os.remove(audioFile)
             if subtitlesPath:
                 os.remove(subtitlesPath)
