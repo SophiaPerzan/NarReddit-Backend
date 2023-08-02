@@ -2,7 +2,7 @@ from elevenlabs import set_api_key, generate, voices, save
 import os
 
 
-class TTS:
+class ElevenlabsTTS:
     def __init__(self, env):
         self.env = env
         set_api_key(env['ELEVENLABS_API_KEY'])
