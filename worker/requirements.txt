@@ -9,3 +9,6 @@ rq==1.15.1
 pydantic==1.10.8
 elevenlabs==0.2.15
 google-cloud-texttospeech==2.14.1
+beautifulsoup4==4.12.2
+lxml==4.9.3
+aeneas==1.4.0
