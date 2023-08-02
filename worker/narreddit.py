@@ -1,6 +1,7 @@
 from os import environ as env
 from scraper import Scraper
-from tts import TTS
+from elevenlabs_tts import ElevenlabsTTS
+from google_tts import GoogleTTS
 from videoGen import VideoGenerator
 from forcedAligner import ForcedAligner
 import os
@@ -10,7 +11,8 @@ from gpt import GPT
 class NarReddit:
     def __init__(self):
         self.scraper = Scraper(env)
-        self.tts = TTS(env)
+        self.googleTTS = GoogleTTS()
+        self.elevenlabsTTS = ElevenlabsTTS(env)
         self.forcedAligner = ForcedAligner(env['GENTLE_URL'])
         self.videoGen = VideoGenerator(env)
         self.gpt = GPT(env)
@@ -23,9 +25,17 @@ class NarReddit:
     def editPostForTTS(self, postContent):
         pass
 
-    def generateAudio(self, editedPost, gender, language, filePrefix):
-        audioFile = self.tts.createAudio(
-            editedPost, gender, language, filePrefix)
+    def generateAudio(self, editedPost, gender, language, filePrefix, ttsEngine="GOOGLE"):
+        match ttsEngine:
+            case "ELEVENLABS":
+                audioFile = self.elevenlabsTTS.createAudio(
+                    editedPost, gender, language, filePrefix)
+            case "GOOGLE":
+                audioFile = self.googleTTS.createAudio(
+                    editedPost, gender, language, filePrefix)
+            case _:
+                audioFile = self.googleTTS.createAudio(
+                    editedPost, gender, language, filePrefix)
         print(f"Created audio file: {audioFile}")
         return audioFile
 
@@ -54,12 +64,13 @@ class NarReddit:
         languages = params['LANGUAGES'].lower().split(',')
         gender = self.gpt.getGender(postContent)
         videos = []
+        ttsEngine = params['TTS_ENGINE'].upper()
 
         for language in languages:
             editedPost = self.gpt.expandAcronymsAndAbbreviations(
                 postContent, language)
             audioFile = self.generateAudio(
-                editedPost, gender, language, filePrefix)
+                editedPost, gender, language, filePrefix, ttsEngine)
 
             if params['SUBTITLES'] == True and language == 'english':
                 subtitlesPath = self.createSubtitles(
