@@ -14,14 +14,17 @@ if __name__ == '__main__':
 
 
 def script_async(params):
-    narreddit = NarReddit()
-    video_files = narreddit.createVideo(params)
+    try:
+        narreddit = NarReddit()
+        video_files = narreddit.createVideo(params)
 
-    # create a ZipFile object
-    zip_filename = os.path.join('shared', params['DOC_ID']+'.zip')
-    with zipfile.ZipFile(zip_filename, 'w') as zipf:
-        # add files to the zip file
-        for video in video_files:
-            zipf.write(video, arcname=os.path.basename(video))
-            os.remove(video)
-    print("Created zip file")
+        # create a ZipFile object
+        zip_filename = os.path.join('shared', params['DOC_ID']+'.zip')
+        with zipfile.ZipFile(zip_filename, 'w') as zipf:
+            # add files to the zip file
+            for video in video_files:
+                zipf.write(video, arcname=os.path.basename(video))
+                os.remove(video)
+        print("Created zip file")
+    except Exception as e:
+        raise Exception(e)

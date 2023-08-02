@@ -59,28 +59,34 @@ class NarReddit:
         return videoFile
 
     def createVideo(self, params):
-        filePrefix = params['DOC_ID']
-        postTitle, postContent = self.scrapePost(params)
-        languages = params['LANGUAGES'].lower().split(',')
-        gender = self.gpt.getGender(postContent)
-        videos = []
-        ttsEngine = params['TTS_ENGINE'].upper()
+        try:
+            filePrefix = params['DOC_ID']
+            postTitle, postContent = self.scrapePost(params)
+            languages = params['LANGUAGES'].lower().split(',')
+            if self.gpt.moderationCheckPassed(postContent) == False:
+                raise Exception("Post failed moderation check")
+            gender = self.gpt.getGender(postContent)
+            videos = []
+            ttsEngine = params['TTS_ENGINE'].upper()
 
-        for language in languages:
-            editedPost = self.gpt.expandAcronymsAndAbbreviations(
-                postContent, language)
-            audioFile = self.generateAudio(
-                editedPost, gender, language, filePrefix, ttsEngine)
+            for language in languages:
+                editedPost = self.gpt.expandAcronymsAndAbbreviations(
+                    postContent, language)
+                audioFile = self.generateAudio(
+                    editedPost, gender, language, filePrefix, ttsEngine)
 
-            if params['SUBTITLES'] == True and language == 'english':
-                subtitlesPath = self.createSubtitles(
-                    editedPost, audioFile, filePrefix)
-            else:
-                subtitlesPath = None
+                if params['SUBTITLES'] == True and language == 'english':
+                    subtitlesPath = self.createSubtitles(
+                        editedPost, audioFile, filePrefix)
+                else:
+                    subtitlesPath = None
 
-            videos.append(self.generateVideo(
-                audioFile, subtitlesPath, params, language, filePrefix))
-            os.remove(audioFile)
-            if subtitlesPath:
-                os.remove(subtitlesPath)
-        return videos
+                videos.append(self.generateVideo(
+                    audioFile, subtitlesPath, params, language, filePrefix))
+                os.remove(audioFile)
+                if subtitlesPath:
+                    os.remove(subtitlesPath)
+            return videos
+
+        except Exception as e:
+            raise Exception(e)

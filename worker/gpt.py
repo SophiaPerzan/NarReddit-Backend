@@ -47,3 +47,15 @@ class GPT:
             ],
             temperature=0.1
         ).choices[0].message.content
+
+    def moderationCheckPassed(self, text):
+        response = openai.Moderation.create(
+            input=text
+        )
+        output = response["results"][0]
+        if output == True:  # True means the text was flagged as being against OpenAI Policy
+            print("Moderation check failed")
+            return False
+        else:
+            print("Moderation check passed")
+            return True
