@@ -9,11 +9,8 @@ services:
             - 5000:5000
         depends_on:
             - redis
-            - gentle
         env_file:
             - app.env
-    gentle:
-        image: lowerquality/gentle
     worker:
         build: ./worker
         command: rq worker -u redis://redis:6379
@@ -21,7 +18,6 @@ services:
             - ./shared:/code/shared
         depends_on:
             - redis
-            - gentle
             - web
         env_file:
             - .env

@@ -17,7 +17,9 @@ def check_api_key():
 @app.route('/create', methods=['POST'])
 def script():
     params = request.get_json()
-    job = q.enqueue('worker.script_async', params)
+    numLangs = len(params['LANGUAGES'].split(','))
+    timeOut = 300 * numLangs
+    job = q.enqueue('worker.script_async', job_timeout=timeOut, args=(params,))
     return jsonify({'status': 'started', 'task_id': job.get_id()}), 202
 
 
