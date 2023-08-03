@@ -21,7 +21,7 @@ class GPT:
         ).choices[0].message.content
 
     def expandAcronymsAndAbbreviations(self, text, language="english"):
-        sharedInstructions = "Expand the abbreviations and acronyms in the text, correct grammar mistakes, and enhance the overall readability. Since the output will be used as input for a text-to-speech program, ensure it can be processed easily. Add punctuation as necessary for smooth speech flow. You can leave commonly understood acronyms and abbreviations as they are."
+        sharedInstructions = "Expand the abbreviations and acronyms in the text, correct grammar mistakes, and enhance the overall readability. Since the output will be used as input for a text-to-speech program, ensure it can be processed easily. Add punctuation as necessary for smooth speech flow. You can leave commonly understood acronyms and abbreviations as they are. Only respond with the modified (or unmodified if no changes were made) text. Do not include any other information."
 
         if language != "english":
             instructions = f"Translate the following Reddit post to {language}, then {sharedInstructions}. Moreover, replace all non-letter characters with their equivalent word or letter representation in the target language. No numerical characters should remain in the text."
@@ -30,17 +30,6 @@ class GPT:
 
         return openai.ChatCompletion.create(
             model=self.model,
-            messages=[
-                {"role": "system", "content": instructions},
-                {"role": "user", "content": text}
-            ],
-            temperature=0.1
-        ).choices[0].message.content
-
-    def getSubtitles(self, text):
-        instructions = "Given the following transcript, replace all non-letter characters and numbers with their corresponding word or letter representation."
-        return openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": instructions},
                 {"role": "user", "content": text}
