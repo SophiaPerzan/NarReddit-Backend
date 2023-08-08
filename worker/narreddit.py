@@ -62,7 +62,14 @@ class NarReddit:
     def createVideo(self, params):
         try:
             filePrefix = params['DOC_ID']
-            postTitle, postContent = self.scrapePost(params)
+
+            if params['CONTENT_ORIGIN'] == 'scraped':
+                postTitle, postContent = self.scrapePost(params)
+            elif params['CONTENT_ORIGIN'] == 'text':
+                postDescription = params['DESCRIPTION']
+                postTitle = params['TITLE']
+                postContent = f"{postTitle}\n{postDescription}"
+
             languages = params['LANGUAGES'].lower().split(',')
             if self.gpt.moderationCheckPassed(postContent) == False:
                 raise Exception("Post failed moderation check")
