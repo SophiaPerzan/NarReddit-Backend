@@ -32,8 +32,17 @@ class VideoGenerator:
         if videoStream['width'] != 9 or videoStream['height'] != 16:
             newWidth, newHeight = self.getNewDimensions(videoStream)
 
+        imageFile = None
+        image_stream = None
+        if params['IMAGE_FILE'] is not None:
+            if not os.path.isfile(params['IMAGE_FILE']):
+                print(f"Image file not found: {params['IMAGE_FILE']}")
+                return False
+            imageFile = params['IMAGE_FILE']
+            image_stream = self.processImage(imageFile, newWidth)
+
         video = self.processVideo(
-            backgroundVideoPath, videoDuration, audioDuration, startTime, newWidth, newHeight, subtitlesPath)
+            backgroundVideoPath, videoDuration, audioDuration, startTime, newWidth, newHeight, subtitlesPath, image_stream=image_stream)
         audio = ffmpeg.input(ttsAudioPath)
 
         self.mergeAudioVideo(video, audio, outputVideoPath)
@@ -68,7 +77,7 @@ class VideoGenerator:
         else:  # narrower than 9:16, crop top and bottom
             return width, int(width * (16 / 9))
 
-    def processVideo(self, backgroundVideoPath, videoDuration, audioDuration, startTime, newWidth, newHeight, subtitlesPath):
+    def processVideo(self, backgroundVideoPath, videoDuration, audioDuration, startTime, newWidth, newHeight, subtitlesPath, image_stream=None):
         video = ffmpeg.input(backgroundVideoPath)
 
         # Loop the video if it is shorter than the audio
@@ -88,6 +97,11 @@ class VideoGenerator:
         # Scale the video to 1080x1920 max resolution
         video = ffmpeg.filter_(video, 'scale', 'min(1080,iw)', '-1')
 
+        # Overlay the image if provided
+        if image_stream is not None:
+            video = ffmpeg.overlay(
+                video, image_stream, x='(W-w)/2', y='(H-h)/2', enable='between(t,0,5)')
+
         # Add subtitles if provided
         if subtitlesPath is not None and os.path.isfile(subtitlesPath):
             # Set style for the subtitles
@@ -97,6 +111,18 @@ class VideoGenerator:
                 video, 'subtitles', subtitlesPath, force_style=style)
 
         return video
+
+    def processImage(self, imageFile, videoNewWidth):
+        # If an image file is provided, overlay it for the first 5 seconds
+        if imageFile is not None:
+            image_stream = ffmpeg.input(imageFile)
+
+            videoWidth = min(1080, videoNewWidth)
+            imageWidth = min(864, int(videoWidth*0.8))
+
+            # Scale the image to match the video's dimensions if needed
+            image_stream = image_stream.filter_('scale', imageWidth, -1)
+            return image_stream
 
     def mergeAudioVideo(self, video, audio, outputVideoPath):
         vcodec = self.env['VCODEC']
