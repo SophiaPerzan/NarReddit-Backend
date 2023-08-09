@@ -6,6 +6,7 @@ from videoGen import VideoGenerator
 from aeneas_aligner import AeneasAligner
 import os
 from gpt import GPT
+import random
 
 
 class NarReddit:
@@ -49,7 +50,12 @@ class NarReddit:
 
     def generateVideo(self, titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix):
         outputPath = os.path.join('shared', f"{language}-{filePrefix}.mp4")
-        bgVideoPath = os.path.join('shared', 'background-videos')
+        videoDirectory = os.path.join('shared', 'background-videos')
+        if params['BG_VIDEO_FILENAME'] == 'RANDOM':
+            bgVideoPath = self.getRandomMP4(videoDirectory)
+        else:
+            bgVideoPath = os.path.join(
+                videoDirectory, params['BG_VIDEO_FILENAME'])
         videoFile = self.videoGen.generateVideo(
             titleAudioFile, descriptionAudioFile, outputPath, bgVideoPath, titleSubtitlesPath, descriptionSubtitlesPath, params)
 
@@ -58,6 +64,16 @@ class NarReddit:
         else:
             print("Failed to create output video file")
         return videoFile
+
+    def getRandomMP4(self, directory):
+        # Filter the list to include only .mp4 files
+        mp4Files = [entry.path for entry in os.scandir(
+            directory) if entry.is_file() and entry.name.endswith('.mp4')]
+
+        # Select a random .mp4 file
+        randomMP4 = random.choice(mp4Files)
+
+        return randomMP4
 
     def createVideo(self, params):
         try:

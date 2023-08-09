@@ -8,10 +8,7 @@ class VideoGenerator:
     def __init__(self, env):
         self.env = env
 
-    def generateVideo(self, titleAudioPath, descriptionAudioPath, outputVideoPath, directory, titleSubtitlesPath, descriptionSubtitlesPath, params):
-        backgroundVideoPath = self.getBackgroundVideoPath(
-            params['BG_VIDEO_FILENAME'], directory)
-
+    def generateVideo(self, titleAudioPath, descriptionAudioPath, outputVideoPath, backgroundVideoPath, titleSubtitlesPath, descriptionSubtitlesPath, params):
         if not os.path.isfile(backgroundVideoPath):
             print(f"Video file not found: {backgroundVideoPath}")
             return False
@@ -125,12 +122,6 @@ class VideoGenerator:
 
         return temp_path
 
-    def getBackgroundVideoPath(self, backgroundVideoFileName, directory):
-        if backgroundVideoFileName.upper() == 'RANDOM':
-            return self.getRandomMP4(directory)
-        else:
-            return os.path.join(directory, backgroundVideoFileName)
-
     def getAudioDuration(self, ttsAudioPath):
         probe = ffmpeg.probe(ttsAudioPath)
         return float(probe['streams'][0]['duration'])
@@ -207,13 +198,3 @@ class VideoGenerator:
                                vcodec=vcodec, threads=numThreads)
         output = ffmpeg.overwrite_output(output)
         ffmpeg.run(output)
-
-    def getRandomMP4(self, directory):
-        # Filter the list to include only .mp4 files
-        mp4Files = [entry.path for entry in os.scandir(
-            directory) if entry.is_file() and entry.name.endswith('.mp4')]
-
-        # Select a random .mp4 file
-        randomMP4 = random.choice(mp4Files)
-
-        return randomMP4
