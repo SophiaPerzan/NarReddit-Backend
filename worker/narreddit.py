@@ -47,11 +47,11 @@ class NarReddit:
             audioFile, subtitleText, subtitlesPath, language)
         return subtitlesPath
 
-    def generateVideo(self, audioFile, subtitlesPath, params, language, filePrefix):
+    def generateVideo(self, titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix):
         outputPath = os.path.join('shared', f"{language}-{filePrefix}.mp4")
         bgVideoPath = os.path.join('shared', 'background-videos')
         videoFile = self.videoGen.generateVideo(
-            audioFile, outputPath, bgVideoPath, subtitlesPath, params)
+            titleAudioFile, descriptionAudioFile, outputPath, bgVideoPath, titleSubtitlesPath, descriptionSubtitlesPath, params)
 
         if videoFile:
             print(f"Created output video file at: {videoFile}")
@@ -64,36 +64,52 @@ class NarReddit:
             filePrefix = params['DOC_ID']
 
             if params['CONTENT_ORIGIN'] == 'scraped':
-                postTitle, postContent = self.scrapePost(params)
+                postTitle, postDescription = self.scrapePost(params)
             elif params['CONTENT_ORIGIN'] == 'text':
-                postDescription = params['DESCRIPTION']
                 postTitle = params['TITLE']
-                postContent = f"{postTitle}\n{postDescription}"
+                postDescription = params['DESCRIPTION']
+            postTitleAndDescription = postTitle + '\n' + postDescription
 
             languages = params['LANGUAGES'].lower().split(',')
-            if self.gpt.moderationCheckPassed(postContent) == False:
+            if self.gpt.moderationCheckPassed(postTitleAndDescription) == False:
                 raise Exception("Post failed moderation check")
-            gender = self.gpt.getGender(postContent)
+            gender = self.gpt.getGender(postTitleAndDescription)
             videos = []
             ttsEngine = params['TTS_ENGINE'].upper()
 
             for language in languages:
-                editedPost = self.gpt.expandAcronymsAndAbbreviations(
-                    postContent, language)
-                audioFile = self.generateAudio(
-                    editedPost, gender, language, filePrefix, ttsEngine)
+                editedTitle = self.gpt.expandAcronymsAndAbbreviations(
+                    postTitle, language)
+                editedDescription = self.gpt.expandAcronymsAndAbbreviations(
+                    postDescription, language)
+
+                titleAudioFile = self.generateAudio(
+                    editedTitle, gender, language, f"title-{filePrefix}", ttsEngine)
+
+                descriptionAudioFile = self.generateAudio(
+                    editedDescription, gender, language, f"description-{filePrefix}", ttsEngine)
 
                 if params['SUBTITLES'] == True:
-                    subtitlesPath = self.createSubtitles(
-                        editedPost, audioFile, filePrefix, language)
+                    titleSubtitlesPath = self.createSubtitles(
+                        editedTitle, titleAudioFile, f"title-{filePrefix}", language)
+                    descriptionSubtitlesPath = self.createSubtitles(
+                        editedDescription, descriptionAudioFile, f"description-{filePrefix}", language)
                 else:
-                    subtitlesPath = None
+                    titleSubtitlesPath = None
+                    descriptionSubtitlesPath = None
 
                 videos.append(self.generateVideo(
-                    audioFile, subtitlesPath, params, language, filePrefix))
-                os.remove(audioFile)
-                if subtitlesPath:
-                    os.remove(subtitlesPath)
+                    titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix))
+
+                os.remove(titleAudioFile)
+                os.remove(descriptionAudioFile)
+                if titleSubtitlesPath:
+                    os.remove(titleSubtitlesPath)
+                if descriptionSubtitlesPath:
+                    os.remove(descriptionSubtitlesPath)
+                # Need to delete temp files (subtitles)
+            if params['IMAGE_FILE'] is not None:
+                os.remove(params['IMAGE_FILE'])
             return videos
 
         except Exception as e:
