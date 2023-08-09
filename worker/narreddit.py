@@ -107,7 +107,6 @@ class NarReddit:
                     os.remove(titleSubtitlesPath)
                 if descriptionSubtitlesPath:
                     os.remove(descriptionSubtitlesPath)
-                # Need to delete temp files (subtitles)
             if params['IMAGE_FILE'] is not None:
                 os.remove(params['IMAGE_FILE'])
             return videos

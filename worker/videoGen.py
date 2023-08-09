@@ -64,6 +64,10 @@ class VideoGenerator:
 
         self.mergeAudioVideo(video, mergedAudio, outputVideoPath)
 
+        # Delete temp files
+        if mergedSubtitlesPath is not None:
+            os.remove(mergedSubtitlesPath)
+
         return outputVideoPath
 
     def mergeAudio(self, titleAudioPath, descriptionAudioPath):

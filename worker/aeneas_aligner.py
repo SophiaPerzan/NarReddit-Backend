@@ -56,7 +56,8 @@ class AeneasAligner:
 
         task.output_sync_map_file()
 
-        print("Output file path: ", subtitles_file)
+        # Delete the temporary text file
+        os.remove(text_path)
 
         return subtitles_file
 
