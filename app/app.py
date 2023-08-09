@@ -16,10 +16,28 @@ def check_api_key():
 
 @app.route('/create', methods=['POST'])
 def script():
-    params = request.get_json()
-    numLangs = len(params['LANGUAGES'].split(','))
+    params = request.form.to_dict()
+    if 'IMAGE_FILE' in request.files:
+        image = request.files['IMAGE_FILE']
+        # Check the content type to determine the file extension
+        file_extension = '.jpeg' if image.content_type == 'image/jpeg' else '.png'
+
+        # Create a temporary file with the correct extension
+        fileName = f"{params['DOC_ID']}{file_extension}"
+        filePath = os.path.join('shared', fileName)
+
+        # Save the uploaded image to the temporary file
+        image.save(filePath)
+
+        # Include the temporary file's path in the parameters
+        params['IMAGE_FILE'] = filePath
+    else:
+        params['IMAGE_FILE'] = None
+    languages_string = request.form['LANGUAGES']
+    numLangs = len(languages_string.split(','))
     timeOut = 300 * numLangs
-    job = q.enqueue('worker.script_async', job_timeout=timeOut, args=(params,))
+    job = q.enqueue('worker.script_async', job_timeout=timeOut,
+                    args=(params,))
     return jsonify({'status': 'started', 'task_id': job.get_id()}), 202
 
 

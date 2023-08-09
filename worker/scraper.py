@@ -24,4 +24,4 @@ class Scraper:
 
         hotPosts = hotPosts[:1]
         post = hotPosts[0]
-        return (post.title, post.title+"\n"+post.selftext)
+        return (post.title, post.selftext)

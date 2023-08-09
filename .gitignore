@@ -168,3 +168,6 @@ service-account.json
 *.mp4
 *.mp3
 *.srt
+*.jpeg
+*.jpg
+*.png

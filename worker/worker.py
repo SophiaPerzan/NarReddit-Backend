@@ -14,6 +14,10 @@ if __name__ == '__main__':
 
 
 def script_async(params):
+
+    params['SUBTITLES'] = params['SUBTITLES'].lower() == 'true'
+    params['RANDOM_START_TIME'] = params['RANDOM_START_TIME'].lower() == 'true'
+
     try:
         narreddit = NarReddit()
         video_files = narreddit.createVideo(params)
