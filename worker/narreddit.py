@@ -23,9 +23,6 @@ class NarReddit:
         print(f"Scraped post: {postContent}")
         return postTitle, postContent
 
-    def editPostForTTS(self, postContent):
-        pass
-
     def generateAudio(self, editedPost, gender, language, filePrefix, ttsEngine="GOOGLE"):
         match ttsEngine:
             case "ELEVENLABS":
