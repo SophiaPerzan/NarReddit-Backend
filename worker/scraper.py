@@ -23,5 +23,7 @@ class Scraper:
                 break
 
         hotPosts = hotPosts[:1]
+        if len(hotPosts) == 0:
+            return ("No Post found matching those criteria", "Try reducing the minimum character count")
         post = hotPosts[0]
         return (post.title, post.selftext)
