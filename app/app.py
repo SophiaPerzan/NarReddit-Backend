@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_file, send_from_directory
 from rq import Queue
 from redis import Redis
 import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 redis_conn = Redis(host='redis')
@@ -69,6 +70,27 @@ def download():
     if not os.path.isfile(filepath):
         return jsonify({'error': 'No filepath associated with this task ID'}), 404
     return send_file(path_or_file=filepath, as_attachment=True, download_name=filename)
+
+
+@app.route('/background', methods=['POST'])
+def upload_background():
+    params = request.form.to_dict()
+    if 'VIDEO_FILE' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    video = request.files['VIDEO_FILE']
+    # Check the content type to determine the file extension
+    if video.content_type == 'video/mp4':
+        file_extension = '.mp4'
+    else:
+        return jsonify({'error': 'Invalid file type'}), 400
+    # Ensure filename is secure
+    fileName = secure_filename(video.filename)
+    filePath = os.path.join('shared', 'background-videos',
+                            params['USER_ID'], fileName)
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(filePath), exist_ok=True)
+    video.save(filePath)
+    return jsonify({'status': 'success'}), 200
 
 
 if __name__ == '__main__':
