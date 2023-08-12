@@ -47,7 +47,12 @@ class NarReddit:
 
     def generateVideo(self, titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix):
         outputPath = os.path.join('shared', f"{language}-{filePrefix}.mp4")
-        videoDirectory = os.path.join('shared', 'background-videos')
+        if params.get('USER_ID') is not None:
+            videoDirectory = os.path.join(
+                'shared', 'background-videos', params['USER_ID'])
+        else:
+            videoDirectory = os.path.join('shared', 'background-videos')
+
         if params['BG_VIDEO_FILENAME'] == 'RANDOM':
             bgVideoPath = self.getRandomMP4(videoDirectory)
         else:
