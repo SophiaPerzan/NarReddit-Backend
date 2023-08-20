@@ -93,5 +93,25 @@ def upload_background():
     return jsonify({'status': 'success'}), 200
 
 
+@app.route('/background/delete', methods=['POST'])
+def delete_background():
+    params = request.get_json()
+    userId = params.get('USER_ID')
+    videoName = params.get('FILENAME')
+    if not videoName or not userId:
+        return jsonify({'error': 'Required parameters missing'}), 400
+    fileName = secure_filename(videoName)
+    filePath = os.path.join('shared', 'background-videos',
+                            userId, fileName)
+    if not os.path.isfile(filePath):
+        return jsonify({'error': 'No file exists'}), 400
+    else:
+        try:
+            os.remove(filePath)
+            return jsonify({'status': 'success'}), 200
+        except Exception as e:
+            return jsonify({'error': f"An error occurred while deleting the file: {str(e)}"}), 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
