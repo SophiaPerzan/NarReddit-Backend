@@ -36,7 +36,7 @@ def script():
         params['IMAGE_FILE'] = None
     languages_string = request.form['LANGUAGES']
     numLangs = len(languages_string.split(','))
-    timeOut = 300 * numLangs
+    timeOut = 600 * numLangs
     job = q.enqueue('worker.script_async', job_timeout=timeOut,
                     args=(params,))
     return jsonify({'status': 'started', 'task_id': job.get_id()}), 202
