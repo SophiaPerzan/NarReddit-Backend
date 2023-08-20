@@ -97,9 +97,9 @@ class NarReddit:
 
             for language in languages:
                 editedTitle = self.gpt.expandAcronymsAndAbbreviations(
-                    postTitle, language)
+                    postTitle, language=language, gender=gender)
                 editedDescription = self.gpt.expandAcronymsAndAbbreviations(
-                    postDescription, language)
+                    postDescription, language=language, gender=gender)
 
                 titleAudioFile = self.generateAudio(
                     editedTitle, gender, language, f"title-{filePrefix}", ttsEngine)
