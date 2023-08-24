@@ -37,7 +37,8 @@ class VideoGenerator:
             titleSubtitlesPath, descriptionSubtitlesPath, titleAudioDuration, hasImage)
         # Subtitles are in a temp file
 
-        mergedAudioDuration = titleAudioDuration + descriptionAudioDuration + 2
+        # + 1 for the 1 second silence at the end of the video
+        mergedAudioDuration = titleAudioDuration + descriptionAudioDuration + 1
         videoProbe = ffmpeg.probe(backgroundVideoPath)
         videoStream = self.getVideoStream(videoProbe)
         videoDuration = float(videoStream['duration'])
