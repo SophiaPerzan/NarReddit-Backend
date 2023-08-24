@@ -6,7 +6,7 @@ import os
 
 
 class AeneasAligner:
-    def align(self, audio_file, text_string, subtitles_file, language, max_length=10):
+    def align(self, audio_file, text_string, subtitles_file, language, max_length=13):
         # Break the text string into phrases
         phrases = self.break_into_phrases(text_string, max_length)
 

@@ -37,7 +37,8 @@ class VideoGenerator:
             titleSubtitlesPath, descriptionSubtitlesPath, titleAudioDuration, hasImage)
         # Subtitles are in a temp file
 
-        mergedAudioDuration = titleAudioDuration + descriptionAudioDuration + 2
+        # + 1 for the 1 second silence at the end of the video
+        mergedAudioDuration = titleAudioDuration + descriptionAudioDuration + 1
         videoProbe = ffmpeg.probe(backgroundVideoPath)
         videoStream = self.getVideoStream(videoProbe)
         videoDuration = float(videoStream['duration'])
@@ -70,8 +71,6 @@ class VideoGenerator:
     def mergeAudio(self, titleAudioPath, descriptionAudioPath):
         titleAudio = ffmpeg.input(titleAudioPath)
         descriptionAudio = ffmpeg.input(descriptionAudioPath)
-        # Generate a 1-second silence
-        # silence = ffmpeg.input('anullsrc=r=44100:cl=stereo', t=1) -----------------------------------
         # Concatenate the title and content audio files
         audio_stream = ffmpeg.concat(
             titleAudio, descriptionAudio, v=0, a=1)
@@ -191,10 +190,10 @@ class VideoGenerator:
             image_stream = image_stream.filter_('scale', imageWidth, -1)
             return image_stream
 
-    def mergeAudioVideo(self, video, audio, outputVideoPath):
+    def mergeAudioVideo(self, video, audio, outputVideoPath, bitrate='4000k'):
         vcodec = self.env['VCODEC']
         numThreads = self.env['THREADS']
         output = ffmpeg.output(video, audio, outputVideoPath,
-                               vcodec=vcodec, threads=numThreads)
+                               vcodec=vcodec, b=bitrate, preset='fast', threads=numThreads)
         output = ffmpeg.overwrite_output(output)
         ffmpeg.run(output)

@@ -36,7 +36,7 @@ def script():
         params['IMAGE_FILE'] = None
     languages_string = request.form['LANGUAGES']
     numLangs = len(languages_string.split(','))
-    timeOut = 300 * numLangs
+    timeOut = 600 * numLangs
     job = q.enqueue('worker.script_async', job_timeout=timeOut,
                     args=(params,))
     return jsonify({'status': 'started', 'task_id': job.get_id()}), 202
@@ -91,6 +91,26 @@ def upload_background():
     os.makedirs(os.path.dirname(filePath), exist_ok=True)
     video.save(filePath)
     return jsonify({'status': 'success'}), 200
+
+
+@app.route('/background/delete', methods=['POST'])
+def delete_background():
+    params = request.get_json()
+    userId = params.get('USER_ID')
+    videoName = params.get('FILENAME')
+    if not videoName or not userId:
+        return jsonify({'error': 'Required parameters missing'}), 400
+    fileName = secure_filename(videoName)
+    filePath = os.path.join('shared', 'background-videos',
+                            userId, fileName)
+    if not os.path.isfile(filePath):
+        return jsonify({'error': 'No file exists'}), 400
+    else:
+        try:
+            os.remove(filePath)
+            return jsonify({'status': 'success'}), 200
+        except Exception as e:
+            return jsonify({'error': f"An error occurred while deleting the file: {str(e)}"}), 500
 
 
 if __name__ == '__main__':
