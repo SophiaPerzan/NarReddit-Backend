@@ -25,7 +25,7 @@ class GPT:
             gender = "male"
         else:
             gender = "female"
-        sharedInstructions = "Expand Reddit related acronyms in the text, and correct grammar mistakes. Don't alter curse words or swearing. Replace slashes and dashes with the appropriate word. Add punctuation as necessary for smooth speech flow. Only respond with the modified (or unmodified if no changes were made) text. Do not include any other information."
+        sharedInstructions = "Correct grammar mistakes. Don't alter curse words or swearing. Replace slashes and dashes with the appropriate word. Add punctuation as necessary for smooth speech flow. Only respond with the modified (or unmodified if no changes were made) text. Do not include any other information."
 
         if language != "english":
             instructions = f"Translate the following Reddit post to {language}. The speakers gender is {gender}. Then {sharedInstructions}. Moreover, replace all non-letter characters with their equivalent word or letter representation in the target language. No numerical characters should remain in the text."

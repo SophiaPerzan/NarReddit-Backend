@@ -23,11 +23,11 @@ class NarReddit:
         print(f"Scraped post: {postContent}")
         return postTitle, postContent
 
-    def generateAudio(self, editedPost, gender, language, filePrefix, ttsEngine="GOOGLE"):
+    def generateAudio(self, editedPost, gender, language, filePrefix, ttsEngine="GOOGLE", key=""):
         match ttsEngine:
             case "ELEVENLABS":
                 audioFile = self.elevenlabsTTS.createAudio(
-                    editedPost, gender, language, filePrefix)
+                    editedPost, gender, language, filePrefix, key=key)
             case "GOOGLE":
                 audioFile = self.googleTTS.createAudio(
                     editedPost, gender, language, filePrefix)
@@ -94,6 +94,9 @@ class NarReddit:
             gender = self.gpt.getGender(postTitleAndDescription)
             videos = []
             ttsEngine = params['TTS_ENGINE'].upper()
+            key = ''
+            if params.get('ELEVENLABS_API_KEY') is not None:
+                key = params['ELEVENLABS_API_KEY']
 
             for language in languages:
                 editedTitle = self.gpt.expandAcronymsAndAbbreviations(
@@ -102,10 +105,10 @@ class NarReddit:
                     postDescription, language=language, gender=gender)
 
                 titleAudioFile = self.generateAudio(
-                    editedTitle, gender, language, f"title-{filePrefix}", ttsEngine)
+                    editedTitle, gender, language, f"title-{filePrefix}", ttsEngine, key=key)
 
                 descriptionAudioFile = self.generateAudio(
-                    editedDescription, gender, language, f"description-{filePrefix}", ttsEngine)
+                    editedDescription, gender, language, f"description-{filePrefix}", ttsEngine, key=key)
 
                 if params['SUBTITLES'] == True:
                     titleSubtitlesPath = self.createSubtitles(
