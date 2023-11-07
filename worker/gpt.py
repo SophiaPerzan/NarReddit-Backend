@@ -7,7 +7,7 @@ class GPT:
         openai.api_key = env['OPENAI_API_KEY']
         self.model = "gpt-3.5-turbo"
         if (env['USE_GPT_4'].upper() == 'TRUE'):
-            self.model = "gpt-4"
+            self.model = "gpt-4-1106-preview"
 
     def getGender(self, text):
         instructions = "From the given text, determine the poster's gender. Use the context provided by the text. If the gender is ambiguous, reply with the most probable gender. Respond with a single letter: 'M' for Male or 'F' for Female."
