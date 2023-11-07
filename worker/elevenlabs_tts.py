@@ -18,19 +18,25 @@ class ElevenlabsTTS:
                 return voice
         return None
 
-    def createAudio(self, text, gender, language, filePrefix, key=""):
+    def createAudio(self, text, gender, language, filePrefix, key="", voice=None):
         customApiKey = False
         if key != "":
             self.setAPIKey(key)
             customApiKey = True
         if customApiKey:
-            voice = self.Grace
-            if gender == "M":
-                voice = self.Matthew
+            if voice is not None:
+                voice = self.findVoice(self.voices, voice)
+            else:
+                voice = self.Grace
+                if gender == "M":
+                    voice = self.Matthew
         else:
-            voice = self.Paola
-            if gender == "M":
-                voice = self.Arthur
+            if voice is not None:
+                voice = self.findVoice(self.voices, voice)
+            else:
+                voice = self.Paola
+                if gender == "M":
+                    voice = self.Arthur
 
         if language == "english":
             audio = generate(
