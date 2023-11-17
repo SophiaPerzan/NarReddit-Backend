@@ -10,7 +10,8 @@ import random
 
 
 class NarReddit:
-    def __init__(self):
+    def __init__(self, bucket):
+        self.bucket = bucket
         self.scraper = Scraper(env)
         self.googleTTS = GoogleTTS()
         self.elevenlabsTTS = ElevenlabsTTS(env)
@@ -39,25 +40,17 @@ class NarReddit:
 
     def createSubtitles(self, editedPost, audioFile, filePrefix, language):
         subtitlesPath = os.path.join(
-            'shared', 'tts-audio-files', f'subtitles-{filePrefix}.srt')
+            'temp', 'tts-audio-files', f'subtitles-{filePrefix}.srt')
+        os.makedirs(os.path.dirname(subtitlesPath), exist_ok=True)
         subtitleText = editedPost
         self.aeneasAligner.align(
             audioFile, subtitleText, subtitlesPath, language)
         return subtitlesPath
 
-    def generateVideo(self, titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix):
-        outputPath = os.path.join('shared', f"{language}-{filePrefix}.mp4")
-        if params.get('USER_ID') is not None:
-            videoDirectory = os.path.join(
-                'shared', 'background-videos', params['USER_ID'])
-        else:
-            videoDirectory = os.path.join('shared', 'background-videos')
+    def generateVideo(self, bgVideoPath, titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix):
+        outputPath = os.path.join('temp', f"{language}-{filePrefix}.mp4")
+        os.makedirs(os.path.dirname(outputPath), exist_ok=True)
 
-        if params['BG_VIDEO_FILENAME'] == 'RANDOM':
-            bgVideoPath = self.getRandomMP4(videoDirectory)
-        else:
-            bgVideoPath = os.path.join(
-                videoDirectory, params['BG_VIDEO_FILENAME'])
         videoFile = self.videoGen.generateVideo(
             titleAudioFile, descriptionAudioFile, outputPath, bgVideoPath, titleSubtitlesPath, descriptionSubtitlesPath, params)
 
@@ -66,16 +59,6 @@ class NarReddit:
         else:
             print("Failed to create output video file")
         return videoFile
-
-    def getRandomMP4(self, directory):
-        # Filter the list to include only .mp4 files
-        mp4Files = [entry.path for entry in os.scandir(
-            directory) if entry.is_file() and entry.name.endswith('.mp4')]
-
-        # Select a random .mp4 file
-        randomMP4 = random.choice(mp4Files)
-
-        return randomMP4
 
     def createVideo(self, params):
         try:
@@ -101,6 +84,12 @@ class NarReddit:
             if params.get('ELEVENLABS_VOICE') is not None:
                 voice = params['ELEVENLABS_VOICE']
 
+            blob = self.bucket.blob(params['BG_VIDEO_FILENAME'])
+            bgVideoPath = os.path.join(
+                'temp', f"{os.path.basename(params['BG_VIDEO_FILENAME'])}")
+            os.makedirs(os.path.dirname(bgVideoPath), exist_ok=True)
+            blob.download_to_filename(bgVideoPath)
+
             for language in languages:
                 editedTitle = self.gpt.expandAcronymsAndAbbreviations(
                     postTitle, language=language, gender=gender)
@@ -123,7 +112,7 @@ class NarReddit:
                     descriptionSubtitlesPath = None
 
                 videos.append(self.generateVideo(
-                    titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix))
+                    bgVideoPath, titleAudioFile, descriptionAudioFile, titleSubtitlesPath, descriptionSubtitlesPath, params, language, filePrefix))
 
                 os.remove(titleAudioFile)
                 os.remove(descriptionAudioFile)
@@ -133,6 +122,7 @@ class NarReddit:
                     os.remove(descriptionSubtitlesPath)
             if params['IMAGE_FILE'] is not None:
                 os.remove(params['IMAGE_FILE'])
+            os.remove(bgVideoPath)
             return videos
 
         except Exception as e:

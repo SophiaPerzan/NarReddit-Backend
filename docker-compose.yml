@@ -3,8 +3,6 @@ services:
     web:
         build: ./app
         command: python app.py
-        volumes:
-            - ./shared:/code/shared
         ports:
             - 5000:5000
         depends_on:
@@ -14,8 +12,6 @@ services:
     worker:
         build: ./worker
         command: rq worker -u redis://redis:6379
-        volumes:
-            - ./shared:/code/shared
         depends_on:
             - redis
             - web
