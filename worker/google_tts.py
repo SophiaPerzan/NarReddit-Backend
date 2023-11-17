@@ -55,7 +55,8 @@ class GoogleTTS:
         )
 
         fileName = os.path.join(
-            'shared', 'tts-audio-files', f'{language}-{filePrefix}.mp3')
+            'temp', f'{language}-{filePrefix}.mp3')
+        os.makedirs(os.path.dirname(fileName), exist_ok=True)
         # The response's audio_content is binary.
         with open(f"{fileName}", "wb") as out:
             # Write the response to the output file.

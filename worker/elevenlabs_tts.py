@@ -42,12 +42,13 @@ class ElevenlabsTTS:
             audio = generate(
                 text, voice=voice, model="eleven_monolingual_v1")
             fileName = os.path.join(
-                'shared', 'tts-audio-files', f'english-{filePrefix}.mp3')
+                'temp', f'english-{filePrefix}.mp3')
         else:
             audio = generate(
                 text, voice=voice, model="eleven_multilingual_v2")
             fileName = os.path.join(
-                'shared', 'tts-audio-files', f'{language}-{filePrefix}.mp3')
+                'temp', f'{language}-{filePrefix}.mp3')
+        os.makedirs(os.path.dirname(fileName), exist_ok=True)
         save(audio, fileName)
         return fileName
 
